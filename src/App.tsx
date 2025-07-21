@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { FileText, Upload, Download, Plus, Trash2, Eye } from 'lucide-react';
+import { FileText, Upload, Plus, Trash2, Eye } from 'lucide-react';
 import { PDFDocument, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 
@@ -187,14 +187,6 @@ function App() {
     }
   };
 
-  const downloadMergedPDF = () => {
-    if (!previewUrl) return;
-    
-    const link = document.createElement('a');
-    link.href = previewUrl;
-    link.download = '整合文件.pdf';
-    link.click();
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -204,9 +196,9 @@ function App() {
           <p className="text-slate-600">上傳、編輯並整合您的PDF文件</p>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Panel - Controls */}
-          <div className="space-y-6">
+          <div className="lg:col-span-1 space-y-6">
             {/* Main Document Section */}
             <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
               <h2 className="text-xl font-semibold text-slate-800 mb-4 flex items-center gap-2">
@@ -374,24 +366,14 @@ function App() {
           </div>
 
           {/* Right Panel - Preview */}
-          <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
+          <div className="lg:col-span-2 bg-white rounded-xl shadow-lg p-6 border border-slate-200">
             <h2 className="text-xl font-semibold text-slate-800 mb-4">預覽</h2>
             {previewUrl ? (
-              <div className="space-y-4">
-                <div className="text-center">
-                  <span className="text-slate-600 block mb-4">整合完成</span>
-                  <button
-                    onClick={downloadMergedPDF}
-                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-colors mx-auto"
-                  >
-                    <Download className="w-5 h-5" />
-                    下載整合文件
-                  </button>
-                </div>
-                <div className="border rounded-lg overflow-hidden">
+              <div className="h-full">
+                <div className="border rounded-lg overflow-hidden h-full">
                   <iframe
                     src={previewUrl}
-                    className="w-full h-96"
+                    className="w-full h-[600px]"
                     title="PDF Preview"
                   />
                 </div>
