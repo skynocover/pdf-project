@@ -18,6 +18,8 @@ function App() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [fontBytes, setFontBytes] = useState<ArrayBuffer | null>(null);
   const [fontSize, setFontSize] = useState(16);
+  const [attachmentStartNumber, setAttachmentStartNumber] = useState(1);
+  const [evidenceStartNumber, setEvidenceStartNumber] = useState(1);
 
   // Load font that supports Chinese characters
   React.useEffect(() => {
@@ -94,7 +96,7 @@ function App() {
     
     // Add page numbers to all pages
     pages.forEach((page, index) => {
-      const { width, height } = page.getSize();
+      const { width } = page.getSize();
       page.drawText(`第 ${index + 1} 頁 共 ${pageCount} 頁`, {
         x: width - 120,
         y: 30,
@@ -139,10 +141,11 @@ function App() {
         
         const processedBytes = await addTextToPDF(
           attachmentBytes,
-          `附件${i + 1}`,
+          `附件${attachmentStartNumber + i}`,
           `第 {pageNum} 頁 共 ${pageCount} 頁`,
           pageCount,
-          fontBytes
+          fontBytes,
+          fontSize
         );
         
         const processedPdf = await PDFDocument.load(processedBytes);
@@ -159,10 +162,11 @@ function App() {
         
         const processedBytes = await addTextToPDF(
           evidenceBytes,
-          `證物${i + 1}`,
+          `證物${evidenceStartNumber + i}`,
           `第 {pageNum} 頁 共 ${pageCount} 頁`,
           pageCount,
-          fontBytes
+          fontBytes,
+          fontSize
         );
         
         const processedPdf = await PDFDocument.load(processedBytes);
@@ -245,7 +249,7 @@ function App() {
               <div className="space-y-3">
                 {attachments.map((attachment, index) => (
                   <div key={attachment.id} className="flex items-center justify-between bg-slate-50 p-3 rounded-lg">
-                    <span className="text-slate-700 font-medium">附件{index + 1}: {attachment.name}</span>
+                    <span className="text-slate-700 font-medium">附件{attachmentStartNumber + index}: {attachment.name}</span>
                     <button
                       onClick={() => removeFile(attachment.id, 'attachment')}
                       className="text-red-500 hover:text-red-700 transition-colors"
@@ -265,6 +269,19 @@ function App() {
                     className="hidden"
                   />
                 </label>
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    起始編號:
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={attachmentStartNumber}
+                    onChange={(e) => setAttachmentStartNumber(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="1"
+                  />
+                </div>
               </div>
             </div>
 
@@ -277,7 +294,7 @@ function App() {
               <div className="space-y-3">
                 {evidence.map((evidenceFile, index) => (
                   <div key={evidenceFile.id} className="flex items-center justify-between bg-slate-50 p-3 rounded-lg">
-                    <span className="text-slate-700 font-medium">證物{index + 1}: {evidenceFile.name}</span>
+                    <span className="text-slate-700 font-medium">證物{evidenceStartNumber + index}: {evidenceFile.name}</span>
                     <button
                       onClick={() => removeFile(evidenceFile.id, 'evidence')}
                       className="text-red-500 hover:text-red-700 transition-colors"
@@ -297,6 +314,19 @@ function App() {
                     className="hidden"
                   />
                 </label>
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    起始編號:
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={evidenceStartNumber}
+                    onChange={(e) => setEvidenceStartNumber(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="1"
+                  />
+                </div>
               </div>
             </div>
 
