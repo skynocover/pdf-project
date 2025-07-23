@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { FileText, Upload, Plus, Trash2, Eye } from 'lucide-react';
+import { FileText, Upload, Plus, Trash2, Eye, ChevronDown, ChevronUp } from 'lucide-react';
 import { PDFDocument, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 
@@ -20,6 +20,8 @@ function App() {
   const [fontSize, setFontSize] = useState(16);
   const [attachmentStartNumber, setAttachmentStartNumber] = useState(1);
   const [evidenceStartNumber, setEvidenceStartNumber] = useState(1);
+  const [addBlankForDoubleSided, setAddBlankForDoubleSided] = useState(true);
+  const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
 
   // Load font that supports Chinese characters
   React.useEffect(() => {
@@ -130,6 +132,11 @@ function App() {
         const mainPdf = await PDFDocument.load(mainBytes);
         const mainPages = await mergedPdf.copyPages(mainPdf, mainPdf.getPageIndices());
         mainPages.forEach(page => mergedPdf.addPage(page));
+        
+        // Add blank page if odd number of pages and double-sided printing is enabled
+        if (addBlankForDoubleSided && mainPdf.getPageCount() % 2 !== 0) {
+          mergedPdf.addPage();
+        }
       }
       
       // Process and add attachments
@@ -151,6 +158,11 @@ function App() {
         const processedPdf = await PDFDocument.load(processedBytes);
         const pages = await mergedPdf.copyPages(processedPdf, processedPdf.getPageIndices());
         pages.forEach(page => mergedPdf.addPage(page));
+        
+        // Add blank page if odd number of pages and double-sided printing is enabled
+        if (addBlankForDoubleSided && pageCount % 2 !== 0) {
+          mergedPdf.addPage();
+        }
       }
       
       // Process and add evidence
@@ -172,6 +184,11 @@ function App() {
         const processedPdf = await PDFDocument.load(processedBytes);
         const pages = await mergedPdf.copyPages(processedPdf, processedPdf.getPageIndices());
         pages.forEach(page => mergedPdf.addPage(page));
+        
+        // Add blank page if odd number of pages and double-sided printing is enabled
+        if (addBlankForDoubleSided && pageCount % 2 !== 0) {
+          mergedPdf.addPage();
+        }
       }
       
       const mergedBytes = await mergedPdf.save();
@@ -199,6 +216,63 @@ function App() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Panel - Controls */}
           <div className="lg:col-span-1 space-y-6">
+            {/* Settings Section - Collapsible */}
+            <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
+              <button
+                onClick={() => setIsSettingsExpanded(!isSettingsExpanded)}
+                className="w-full flex items-center justify-between text-xl font-semibold text-slate-800 mb-4 hover:text-slate-600 transition-colors"
+              >
+                <span>詳細設定</span>
+                {isSettingsExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+              </button>
+              
+              {isSettingsExpanded && (
+                <div className="space-y-6">
+                  {/* Text Settings */}
+                  <div>
+                    <h3 className="text-lg font-medium text-slate-700 mb-3">文字設定</h3>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        字體大小: {fontSize}px
+                      </label>
+                      <input
+                        type="range"
+                        min="10"
+                        max="30"
+                        value={fontSize}
+                        onChange={(e) => setFontSize(Number(e.target.value))}
+                        className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                      />
+                      <div className="flex justify-between text-xs text-slate-500 mt-1">
+                        <span>10px</span>
+                        <span>30px</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Print Settings */}
+                  <div>
+                    <h3 className="text-lg font-medium text-slate-700 mb-3">列印設定</h3>
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="doubleSided"
+                        checked={addBlankForDoubleSided}
+                        onChange={(e) => setAddBlankForDoubleSided(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 bg-slate-100 border-slate-300 rounded focus:ring-blue-500 focus:ring-2"
+                      />
+                      <label htmlFor="doubleSided" className="ml-2 text-sm font-medium text-slate-700">
+                        雙面列印補充空白頁
+                      </label>
+                    </div>
+                    <p className="mt-2 text-xs text-slate-500">
+                      勾選後會為奇數頁的檔案自動加入空白頁，確保每個檔案的第一頁都在正面
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Main Document Section */}
             <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
               <h2 className="text-xl font-semibold text-slate-800 mb-4 flex items-center gap-2">
@@ -322,30 +396,6 @@ function App() {
               </div>
             </div>
 
-            {/* Process Button */}
-            <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
-              <h2 className="text-xl font-semibold text-slate-800 mb-4">文字設定</h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    字體大小: {fontSize}px
-                  </label>
-                  <input
-                    type="range"
-                    min="10"
-                    max="30"
-                    value={fontSize}
-                    onChange={(e) => setFontSize(Number(e.target.value))}
-                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
-                  />
-                  <div className="flex justify-between text-xs text-slate-500 mt-1">
-                    <span>10px</span>
-                    <span>30px</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <button
               onClick={processAndMergePDFs}
               disabled={isProcessing || (!mainDocument && attachments.length === 0 && evidence.length === 0)}
@@ -373,7 +423,7 @@ function App() {
                 <div className="border rounded-lg overflow-hidden h-full">
                   <iframe
                     src={previewUrl}
-                    className="w-full h-[600px]"
+                    className="w-full h-[800px]"
                     title="PDF Preview"
                   />
                 </div>
